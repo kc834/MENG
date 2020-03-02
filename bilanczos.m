@@ -9,6 +9,9 @@
 % subdiagonal entried gamma. Q and R have orthonormal 
 % columns. 
 % 
+% Derived from lecture notes of David Bindel, CS 6210, Fall 2019, Cornell
+% Algorithm from PhD Thesis of Axel Facius, July 2000, Universitat Karlsruhe 
+%
 function [Q,R,alpha,beta,gamma] = bilanczos(A,b,k)
  
 n = length(A); % Max dim

@@ -8,6 +8,8 @@
 % entries alpha and super/subdiagonals beta, and Q has
 % orthonormal columns. 
 % 
+% Taken from lecture notes of David Bindel, CS 6210, Fall 2019, Cornell
+%
 function [Q,alpha,beta] = lanczos(A,b,k)
  
 n = length(A); % Max dim
