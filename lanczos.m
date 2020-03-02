@@ -1,8 +1,8 @@
 % [Q,alpha,beta] = lanczos(A,b) 
 % 
-% Compute an Lanczos decomposition 
+% Compute a Lanczos decomposition 
 % 
-% A*Q(:,1:end-1) = Q*T 
+% A*Q = Q*T 
 % 
 % where T is a k+1-by-k tridiagonal matrix with diagonal 
 % entries alpha and super/subdiagonals beta, and Q has
