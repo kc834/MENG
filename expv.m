@@ -87,23 +87,33 @@ if nargin == 4
   m = min(n,30);
 end
 
-anorm = norm(A,'inf'); 
-mxrej = 10;  btol  = 1.0e-7; 
-gamma = 0.9; delta = 1.2; 
-mb    = m; t_out   = abs(t);
-nstep = 0; t_new   = 0;
-t_now = 0; s_error = 0;
+anorm = norm(A,'inf'); % maximum absolute row sum
+mxrej = 10;
+btol  = 1.0e-7; 
+gamma = 0.9; 
+delta = 1.2; 
+mb    = m; % dimension
+t_out   = abs(t); % absolute value of time
+nstep = 0; 
+t_new   = 0;
+t_now = 0; 
+s_error = 0;
 rndoff= anorm*eps;
 
-k1 = 2; xm = 1/m; normv = norm(v); beta = normv;
+k1 = 2; 
+xm = 1/m; 
+normv = norm(v); % Euclidean norm 
+beta = normv; 
 fact = (((m+1)/exp(1))^(m+1))*sqrt(2*pi*(m+1));
 t_new = (1/anorm)*((fact*tol)/(4*beta*anorm))^xm;
-s = 10^(floor(log10(t_new))-1); t_new = ceil(t_new/s)*s; 
-sgn = sign(t); nstep = 0;
+s = 10^(floor(log10(t_new))-1); 
+t_new = ceil(t_new/s)*s; 
+sgn = sign(t); 
+nstep = 0;
 
 w = v;
 hump = normv;
-while t_now < t_out % comparint time
+while t_now < t_out % comparing time
   nstep = nstep + 1;
   t_step = min( t_out-t_now,t_new );
   V = zeros(n,m+1); 
@@ -131,7 +141,7 @@ while t_now < t_out % comparint time
      avnorm = norm(A*V(:,m+1)); 
   end
   ireject = 0;
-  while ireject <= mxrej
+  while ireject <= mxrej % Finite number of rejections
      mx = mb + k1;
      F = expm(sgn*t_step*H(1:mx,1:mx));
      if k1 == 0
