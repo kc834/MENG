@@ -28,4 +28,9 @@ function y=utfAv_SingleArnoldi(u,A,t,v,tol,m)
 % return the answer after taking a dot product with u
 y = u'*w; % should be a scalar
 
+% The BiLanczos implementation
+[yexp, err, hump1, hump2] = expvB( -t, A, u, v, tol, m );
+
+disp(yexp);
+
 end

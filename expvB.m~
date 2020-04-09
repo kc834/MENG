@@ -24,7 +24,7 @@ t_end = t_out; % Added to modify code for range
 s_error = 0;
 rndoff= anorm*eps;
 
-k1 = 2;
+k1 = 2; 
 xm = 1/m; 
 normv = norm(v); % Euclidean norm 
 beta1 = normv; 
@@ -36,51 +36,49 @@ s = 10^(floor(log10(t_new))-1);
 t_new = ceil(t_new/s)*s; 
 sgn = sign(t); 
 nstep = 0;
+k=m;
 
 w1 = v;
 w2 = u;
 hump1 = normv;
 hump2 = normu;
 while (t_end - t_now) > 0 % while range is high
-    disp(t_end-t_now);
+    
   nstep = nstep + 1;
   t_step = min( (t_end-t_now)/2,t_new );
   
   n = length(A); % Max dim
-  Q = zeros(n,m+1); % Orthonormal basis, n by k+1 array
-  R = zeros(n,m+1);
-  T = zeros(m+2,m+2); % Added extra column since matrix has to be square
-  alpha = zeros(m+1,1); 
-  beta = zeros(m+1,1);
-  gamma = zeros(m+1,1);
+  Q = zeros(n,k+1); % Orthonormal basis, n by k+1 array
+  R = zeros(n,k+1);
+  T = zeros(k+1,k);
+  alpha = zeros(k,1); 
+  beta1 = zeros(k,1);
+  gamma = zeros(k,1);
 
   Q(:,1) = normv; % Arbitrary vector with norm 1
   Q(:,1) = Q(:,1)/norm(Q(:,1));
   R(:,1) = Q(:,1);
-  for j = 1:m 
+  for j = 1:k 
       Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace
       R(:,j+1) = A'*R(:,j);
       alpha(j) = R(:,j)'*Q(:,j+1);
       Q(:,j+1) = Q(:,j+1)-alpha(j)*Q(:,j); 
       R(:,j+1) = R(:,j+1)-alpha(j)*R(:,j); 
       if j > 1 
-          Q(:,j+1) = Q(:,j+1)-beta(j-1)*Q(:,j-1); 
+          Q(:,j+1) = Q(:,j+1)-beta1(j-1)*Q(:,j-1); 
           R(:,j+1) = R(:,j+1)-gamma(j-1)*R(:,j-1); 
       end
       gamma(j) = norm(Q(:,j+1));
       Q(:,j+1) = Q(:,j+1)/gamma(j);  
-      beta(j) = R(:,j+1)'*Q(:,j+1);
-      R(:,j+1) = R(:,j+1)/beta(j);
+      beta1(j) = R(:,j+1)'*Q(:,j+1);
+      R(:,j+1) = R(:,j+1)/beta1(j);
       T(j,j) = alpha(j);
       T(j+1,j) = gamma(j);
-      if j ~= m
-        T(j, j+1) = beta(j);
+      if j ~= k
+        T(j, j+1) = beta1(j);
       end
   end
-  if k1 ~= 0
-     T(m+2,m+1) = 1;
-     avnorm = norm(A*Q(:,m+1)); 
-  end
+  
   ireject = 0;
   while ireject <= mxrej % Finite number of rejections
      mx = mb + k1;
@@ -115,11 +113,11 @@ while (t_end - t_now) > 0 % while range is high
      end
   end
   mx = mb + max( 0,k1-1 );
-  w1 = Q(:,1:mx)*(beta1.*F(1:mx,1)); % right vector
+  w1 = Q(:,1:mx)*(beta1*T(1:mx,1)); % right vector
   beta1 = norm( w1 );
-  hump1 = max(hump1,beta1);
+  hump = max(hump,beta1);
   
-  w2 = R(:,1:mx)*(beta2.*F(1,1:mx)'); % left vector
+  w2 = R(:,1:mx)*(beta2*T(1:mx,1)'); % left vector
   beta2 = norm( w2 );
   hump2 = max(hump2,beta2);
 
