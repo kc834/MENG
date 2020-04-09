@@ -13,7 +13,7 @@ end
 anorm = norm(A,'inf'); % maximum absolute row sum
 mxrej = 10;
 btol  = 1.0e-7; 
-gamma = 0.9; 
+gamma1 = 0.9; 
 delta = 1.2; 
 mb    = m; % dimension
 t_out   = abs(t); % absolute value of time
@@ -42,22 +42,21 @@ w2 = u;
 hump1 = normv;
 hump2 = normu;
 while (t_end - t_now) > 0 % while range is high
-    disp(t_end-t_now);
   nstep = nstep + 1;
-  t_step = min( (t_end-t_now)/2,t_new );
+  t_step = min( (t_end-t_now)/2,t_new ); % step cannot exceed range
   
   n = length(A); % Max dim
-  Q = zeros(n,m+1); % Orthonormal basis, n by k+1 array
+  Q = zeros(n,m+1); % Orthonormal basis, n by m+1 array
   R = zeros(n,m+1);
   T = zeros(m+2,m+2); % Added extra column since matrix has to be square
   alpha = zeros(m+1,1); 
   beta = zeros(m+1,1);
   gamma = zeros(m+1,1);
 
-  Q(:,1) = normv; % Arbitrary vector with norm 1
+  Q(:,1) = v; % Arbitrary vector
   Q(:,1) = Q(:,1)/norm(Q(:,1));
   R(:,1) = Q(:,1);
-  for j = 1:m 
+  for j = 1:m % BiLanczos
       Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace
       R(:,j+1) = A'*R(:,j);
       alpha(j) = R(:,j)'*Q(:,j+1);
@@ -73,9 +72,9 @@ while (t_end - t_now) > 0 % while range is high
       R(:,j+1) = R(:,j+1)/beta(j);
       T(j,j) = alpha(j);
       T(j+1,j) = gamma(j);
-      if j ~= m
-        T(j, j+1) = beta(j);
-      end
+%       if j ~= m
+      T(j, j+1) = beta(j);
+%       end
   end
   if k1 ~= 0
      T(m+2,m+1) = 1;
@@ -105,7 +104,7 @@ while (t_end - t_now) > 0 % while range is high
      if err_loc <= delta * t_step*tol
         break;
      else
-        t_step = gamma * t_step * (t_step*tol/err_loc)^xm;
+        t_step = gamma1 * t_step * (t_step*tol/err_loc)^xm;
         s = 10^(floor(log10(t_step))-1);
         t_step = ceil(t_step/s) * s;
         if ireject == mxrej
@@ -115,22 +114,23 @@ while (t_end - t_now) > 0 % while range is high
      end
   end
   mx = mb + max( 0,k1-1 );
-  w1 = Q(:,1:mx)*(beta1.*F(1:mx,1)); % right vector
-  beta1 = norm( w1 );
+  w1 = Q(:,1:mx)*(beta1*F(1:mx,1)); % right vector
+  beta1 = norm( w1 ); % distinct beta
   hump1 = max(hump1,beta1);
   
-  w2 = R(:,1:mx)*(beta2.*F(1,1:mx)'); % left vector
+  w2 = R(:,1:mx)*(beta2*F(1,1:mx)'); % left vector uses transpose
   beta2 = norm( w2 );
   hump2 = max(hump2,beta2);
 
   t_now = t_now + t_step;
   t_end = t_end - t_step;
-  t_new = gamma * t_step * (t_step*tol/err_loc)^xm;
+  t_new = gamma1 * t_step * (t_step*tol/err_loc)^xm;
   s = 10^(floor(log10(t_new))-1); 
   t_new = ceil(t_new/s) * s;
 
   err_loc = max(err_loc,rndoff);
   s_error = s_error + err_loc;
+  % disp(t_end - t_now);
 end
 err = s_error;
 hump1 = hump1 / normv;

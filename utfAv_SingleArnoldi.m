@@ -15,7 +15,7 @@
 % utfAv_SingleArnoldi in order to compare biLanczos and Arnoldi.
 % use t=3.5 if you can't think of any other t value
 
-function y=utfAv_SingleArnoldi(u,A,t,v,tol,m)
+function error =utfAv_SingleArnoldi(u,A,t,v,tol,m)
 % u, A, v are complex matrices/vectors!
 
 % here f(A) is exp(-At)
@@ -28,9 +28,13 @@ function y=utfAv_SingleArnoldi(u,A,t,v,tol,m)
 % return the answer after taking a dot product with u
 y = u'*w; % should be a scalar
 
+disp(y);
+
 % The BiLanczos implementation
 [yexp, err, hump1, hump2] = expvB( -t, A, u, v, tol, m );
 
 disp(yexp);
+
+error = norm(y - yexp);
 
 end
