@@ -67,14 +67,20 @@ while (t_end - t_now) > 0 % while range is high
           R(:,j+1) = R(:,j+1)-gamma(j-1)*R(:,j-1); 
       end
       gamma(j) = norm(Q(:,j+1));
-      Q(:,j+1) = Q(:,j+1)/gamma(j);  
       beta(j) = R(:,j+1)'*Q(:,j+1);
+      Q(:,j+1) = Q(:,j+1)/gamma(j);  
       R(:,j+1) = R(:,j+1)/beta(j);
       T(j,j) = alpha(j);
       T(j+1,j) = gamma(j);
 %       if j ~= m
       T(j, j+1) = beta(j);
 %       end
+      if (gamma(j) < btol) || (beta(j) < btol)
+        k1 = 0;
+        mb = j;
+        t_step = t_out-t_now;
+        break;
+     end
   end
   if k1 ~= 0
      T(m+2,m+1) = 1;
