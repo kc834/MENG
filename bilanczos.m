@@ -10,8 +10,11 @@
 % columns. 
 % 
 % Derived from lecture notes of David Bindel, CS 6210, Fall 2019, Cornell
-% Algorithm from PhD Thesis of Axel Facius, July 2000, Universitat Karlsruhe 
+% High-level algorithm from PhD Thesis of Axel Facius, July 2000, Universitat Karlsruhe 
+% Rational approximation derived with insight from "Efficient Solution of Parabolic 
+%              Equations by Krylov Approximation Methods E. Gallopoulos and Y. Saad
 %
+
 function out = bilanczos(A,v,u,k)
 
 n = length(A); % Max dim

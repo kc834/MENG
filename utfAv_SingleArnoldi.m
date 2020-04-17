@@ -15,6 +15,7 @@
 % utfAv_SingleArnoldi in order to compare biLanczos and Arnoldi.
 % use t=3.5 if you can't think of any other t value
 
+% Return code 0 for success, 1 for failure
 function error = utfAv_SingleArnoldi(u,A,t,v,tol,m)
 % u, A, v are complex matrices/vectors!
 

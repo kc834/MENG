@@ -41,10 +41,13 @@ w1 = v;
 w2 = u;
 hump1 = normv;
 hump2 = normu;
+t_l = t_end-t_now;
 while (t_end - t_now) > 0 % while range is high
     nstep = nstep + 1;
     t_step = min( (t_end-t_now)/2,t_new ); % step cannot exceed range
-  
+    % disp(t_new);
+    t_l = t_l - (2 * t_step);
+    % disp(t_l);
     n = length(A); % Max dim
     Q = zeros(n,m+1); % Orthonormal basis, n by k+1 array
     R = zeros(n,m+1);
@@ -67,10 +70,16 @@ while (t_end - t_now) > 0 % while range is high
 
         T(j+1,j) = norm(Q(:,j+1));
         if norm(Q(:,j+1)) < 1e-7
+            k1 = 0;
+            mb = j;
+            t_step = t_out-t_now;
             break;
         end
         T(j,j+1) = R(:,j+1)'*Q(:,j+1);
         if norm(R(:,j+1)) < 1e-7
+            k1 = 0;
+            mb = j;
+            t_step = t_out-t_now;
             break;
         end
         Q(:,j+1) = Q(:,j+1)/T(j+1,j);
@@ -113,13 +122,18 @@ while (t_end - t_now) > 0 % while range is high
         end
     end
     mx = mb + max( 0,k1-1 );
-    w1 = Q(:,1:mx)*(beta1*F(1:mx,1)); % right vector
-    beta1 = norm( w1 ); % distinct beta
-    hump1 = max(hump1,beta1);
     
-    w2 = R(:,1:mx)*(beta2*F(1,1:mx)'); % left vector uses transpose
-    beta2 = norm( w2 );
-    hump2 = max(hump2,beta2);
+    if k1 ~= 0
+        w1 = Q(:,1:mx)*(beta1*F(1:mx,1)); % right vector
+        beta1 = norm( w1 ); % distinct beta
+        hump1 = max(hump1,beta1);
+        w2 = R(:,1:mx)*(beta2*F(1,1:mx)'); % left vector uses transpose
+        beta2 = norm( w2 );
+        hump2 = max(hump2,beta2);
+        y = w2'*w1;
+    else
+        y = norm(u) * norm(v) * R(1:mx, 1)' * Q(1:mx, 1:mx) * F(1:mx, 1);
+    end
     
     t_now = t_now + t_step;
     t_end = t_end - t_step;
@@ -134,4 +148,4 @@ end
 err = s_error;
 hump1 = hump1 / normv;
 hump2 = hump2 / normu;
-y = w1'*w2;
+% y = w2 * w1;

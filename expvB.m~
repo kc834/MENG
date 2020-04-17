@@ -44,11 +44,11 @@ hump2 = normu;
 while (t_end - t_now) > 0 % while range is high
     nstep = nstep + 1;
     t_step = min( (t_end-t_now)/2,t_new ); % step cannot exceed range
-  
+    disp(t_step
     n = length(A); % Max dim
     Q = zeros(n,m+1); % Orthonormal basis, n by k+1 array
     R = zeros(n,m+1);
-    T = zeros(m+2, m+2); % zero padding
+    T = zeros(m+2, m+2); % zero padding for some (unknown to me) reason
 
     Q(:,1) = v/norm(v); % Arbitrary vector with norm 1
     Q(:,1) = Q(:,1)/norm(Q(:,1));
@@ -76,10 +76,9 @@ while (t_end - t_now) > 0 % while range is high
         Q(:,j+1) = Q(:,j+1)/T(j+1,j);
         R(:,j+1) = R(:,j+1)/T(j,j+1);
     end
-    %     if k1 ~= 0
-    %         T(m+2,m+1) = 1;
-    %         avnorm = norm(A*Q(:,m+1));
-    %     end
+    if k1 ~= 0
+        avnorm = norm(A*Q(:,m+1));
+    end
     ireject = 0;
     while ireject <= mxrej % Finite number of rejections
         mx = mb + k1;
@@ -114,11 +113,12 @@ while (t_end - t_now) > 0 % while range is high
         end
     end
     mx = mb + max( 0,k1-1 );
-    w1 = Q(:,1:mx)*(beta1*F(1:mx,1)); % right vector
+    w1 = Q(:,1:m)*(beta1*F(1:m,1)); % right vector
     beta1 = norm( w1 ); % distinct beta
     hump1 = max(hump1,beta1);
     
-    w2 = R(:,1:mx)*(beta2*F(1,1:mx)'); % left vector uses transpose
+    %w2 = R(:,1:m)*(beta2*F(1,1:m)'); % left vector uses transpose
+    w2 = beta2 * F(1, 1:m) * R(1:m, 1:m);
     beta2 = norm( w2 );
     hump2 = max(hump2,beta2);
     
@@ -135,4 +135,5 @@ end
 err = s_error;
 hump1 = hump1 / normv;
 hump2 = hump2 / normu;
-y = w1'*w2;
+%y = w2'*w1;
+y = w2 * w1;
