@@ -22,10 +22,12 @@ Q = zeros(n,k+1); % Orthonormal basis, n by k+1 array
 R = zeros(n,k+1);
 T = zeros(k+1, k+1);
 
-Q(:,1) = v/norm(v); % Arbitrary vector with norm 1
-Q(:,1) = Q(:,1)/norm(Q(:,1));
-R(:,1) = u/norm(u);
-R(:,1) = R(:,1)/norm(R(:,1));
+Q(:,1) = v; % Arbitrary vector with norm 1
+normv = norm(Q(:,1));
+Q(:,1) = Q(:,1)/normv;
+R(:,1) = u;
+normuv = norm(Q(:,1)'*R(:,1));
+R(:,1) = R(:,1)/normuv;
 for j = 1:k 
     Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace
     R(:,j+1) = A'*R(:,j);
@@ -70,7 +72,7 @@ end
 %     disp("bad eqR");
 % end
 
-out = norm(u) * norm(v) * R(:, 1)' * Q * T(:, 1);
+out = normuv * normv * R(:, 1)' * Q * T(:, 1);
 
 % disp(Q(:, 1:k)'*R(:, 1:k));
 disp(R(:, :)'*Q(:, :));

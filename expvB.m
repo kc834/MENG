@@ -24,7 +24,7 @@ t_end = t_out; % Added to modify code for range
 s_error = 0;
 rndoff= anorm*eps;
 
-k1 = 3;
+k1 = 2;
 xm = 1/m; 
 normv = norm(v); % Euclidean norm 
 beta1 = normv; 
@@ -52,12 +52,14 @@ while (t_end - t_now) > 0 % while range is high
     n = length(A); % Max dim
     Q = zeros(n,m+1); % Orthonormal basis, n by k+1 array
     R = zeros(n,m+1);
-    T = zeros(m+3, m+3); % zero padding for some (unknown to me) reason
+    T = zeros(m+2, m+2); % zero padding for some (unknown to me) reason
 
-    Q(:,1) = v/norm(v); % Arbitrary vector with norm 1
-    Q(:,1) = Q(:,1)/norm(Q(:,1));
-    R(:,1) = u/norm(u);
-    R(:,1) = R(:,1)/norm(R(:,1));
+    Q(:,1) = v; % Arbitrary vector with norm 1
+    beta1 = norm(Q(:,1));
+    Q(:,1) = Q(:,1)/beta1;
+    R(:,1) = u;
+    beta2 = norm(Q(:,1)'*R(:,1));
+    R(:,1) = R(:,1)/beta2;
     for j = 1:m 
         Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace
         R(:,j+1) = A'*R(:,j);
@@ -88,7 +90,6 @@ while (t_end - t_now) > 0 % while range is high
     if k1 ~= 0
         %T(m+2,m+1) = 1;
         T(m+2,m+1) = 1;
-        T(m+3,m+2) = 1;
         avnorm = norm(A*Q(:,m+1));
     end
     ireject = 0;
@@ -99,8 +100,8 @@ while (t_end - t_now) > 0 % while range is high
             err_loc = btol;
             break;
         else
-            phi1 = abs( beta1*F(m+2,1) );
-            phi2 = abs( beta1*F(m+3,1) * avnorm );
+            phi1 = abs( beta1*F(m+1,1) );
+            phi2 = abs( beta1*F(m+2,1) * avnorm );
             if phi1 > 10*phi2
                 err_loc = phi2;
                 xm = 1/m;
@@ -124,7 +125,7 @@ while (t_end - t_now) > 0 % while range is high
             ireject = ireject + 1;
         end
     end
-    mx = mb + max( 0,k1-2 );
+    mx = mb + max( 0,k1-1 );
     
     % Equations for calculating result
     if k1 ~= 0
