@@ -36,7 +36,7 @@ disp(y);
 
 disp(yexp);
 
-error = norm(y - yexp);
+error = norm((y - yexp)/y);
 
 disp(error);
 

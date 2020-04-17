@@ -1,5 +1,5 @@
 % I preprocessed the data by separating the real and imaginary part with
-% a space delimiter. I did a find and replace in a text editr of "+" with 
+% a space delimiter. I did a find and replace in a text editor of "+" with 
 % " +" and "-" with " -", with exceptions for exponentials, e.g. "e-05".
 
 u = load('u.dat');

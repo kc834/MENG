@@ -12,8 +12,10 @@
 % Derived from lecture notes of David Bindel, CS 6210, Fall 2019, Cornell
 % High-level algorithm from PhD Thesis of Axel Facius, July 2000, Universitat Karlsruhe 
 % Rational approximation derived with insight from "Efficient Solution of Parabolic 
-%              Equations by Krylov Approximation Methods E. Gallopoulos and Y. Saad
-%
+%          Equations by Krylov Approximation Methods" by E. Gallopoulos and Y. Saad
+% Insight for preprocessing from "Analysis of Some Krylov Subspace Approximations to 
+%                                        the Matrix Exponential Operator" by Y. Saad
+
 
 function out = bilanczos(A,v,u,k)
 
@@ -23,12 +25,12 @@ R = zeros(n,k+1);
 T = zeros(k+1, k+1);
 
 Q(:,1) = v; % Arbitrary vector with norm 1
-normv = norm(Q(:,1));
+normv = norm(Q(:,1)); % beta1 = normv, beta2 = normu * normv
 Q(:,1) = Q(:,1)/normv;
 R(:,1) = u;
 normuv = norm(Q(:,1)'*R(:,1));
 R(:,1) = R(:,1)/normuv;
-for j = 1:k 
+for j = 1:k
     Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace
     R(:,j+1) = A'*R(:,j);
     T(j,j) = R(:,j)'*Q(:,j+1);
@@ -53,7 +55,7 @@ end
 
 % disp(Q);
 % disp(R);
-% disp(T);
+disp(T);
 % disp(Q(:, 1:k+1)*T(1:k+1, 1:k));
 % disp(A*Q(:, 1:k));
 % eqQ = all(ismembertol(Q(:, 1:k+1)*T(1:k+1, 1:k),A*Q(:, 1:k), 1e-7), 'all');
@@ -75,7 +77,7 @@ end
 out = normuv * normv * R(:, 1)' * Q * T(:, 1);
 
 % disp(Q(:, 1:k)'*R(:, 1:k));
-disp(R(:, :)'*Q(:, :));
+% disp(R(:, :)'*Q(:, :));
 % eqI = all(ismembertol(Q(:, 1:k)'*R(:, 1:k),R(:, 1:k)'*Q(:, 1:k), 1e-7), 'all');
 % if eqI
 %     disp("good eqI");
