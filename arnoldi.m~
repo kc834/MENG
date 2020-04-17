@@ -7,13 +7,13 @@
 % where H is a k+1-by-k upper Hessenberg matrix and Q has
 % orthonormal columns.
 %
-function out = arnoldi(A,v,u, k)
+function [Q,H] = arnoldi(A,,k)
 
 n = length(A);
 Q = zeros(n,k+1); % Orthonormal basis
 H = zeros(k+1,k); % Upper Hessenberg matrix
 
-Q(:,1) = v/norm(v);
+Q(:,1) = b/norm(b);
 for j = 1:k
 
     % Get a vector in the next subspace (and its norm)
@@ -36,6 +36,7 @@ for j = 1:k
 
 end
 
-w = Q(:,1:k)*(norm(v)*H(1:k,1));
-out = u'*w;
+w = Q(:,1:k)*(norm(b)*H(1:k,1));
+u = [0;1;0;0];
+u'*w
 end

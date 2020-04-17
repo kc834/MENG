@@ -12,18 +12,17 @@
 % Derived from lecture notes of David Bindel, CS 6210, Fall 2019, Cornell
 % Algorithm from PhD Thesis of Axel Facius, July 2000, Universitat Karlsruhe 
 %
-function [Q,R,T] = bilanczos(A,b,k)
- 
-
+function out = bilanczos(A,v,u,k)
 
 n = length(A); % Max dim
 Q = zeros(n,k+1); % Orthonormal basis, n by k+1 array
 R = zeros(n,k+1);
 T = zeros(k+1, k+1);
 
-Q(:,1) = b/norm(b); % Arbitrary vector with norm 1
+Q(:,1) = v/norm(v); % Arbitrary vector with norm 1
 Q(:,1) = Q(:,1)/norm(Q(:,1));
-R(:,1) = Q(:,1);
+R(:,1) = u/norm(u);
+R(:,1) = R(:,1)/norm(R(:,1));
 for j = 1:k 
     Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace
     R(:,j+1) = A'*R(:,j);
@@ -36,11 +35,11 @@ for j = 1:k
     end
     
     T(j+1,j) = norm(Q(:,j+1));
-    if T(j+1,j) < 1e-7
+    if norm(Q(:,j+1)) < 1e-7
         break;
     end
     T(j,j+1) = R(:,j+1)'*Q(:,j+1);
-    if T(j,j+1) < 1e-7
+    if norm(R(:,j+1)) < 1e-7
         break;
     end
     Q(:,j+1) = Q(:,j+1)/T(j+1,j);
@@ -67,6 +66,8 @@ if eqR
 else
     disp("bad eqR");
 end
+
+out = norm(u) * norm(v) * R(1:k, 1)' * Q(1:k, 1:k) * T(1:k, 1);
 
 disp(Q(:, :)'*R(:, :));
 disp(R(:, :)'*Q(:, :));
