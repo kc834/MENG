@@ -24,7 +24,7 @@ t_end = t_out; % Added to modify code for range
 s_error = 0;
 rndoff= anorm*eps;
 
-k1 = 2;
+k1 = 3;
 xm = 1/m; 
 normv = norm(v); % Euclidean norm 
 beta1 = normv; 
@@ -45,13 +45,14 @@ t_l = t_end-t_now;
 while (t_end - t_now) > 0 % while range is high
     nstep = nstep + 1;
     t_step = min( (t_end-t_now)/2,t_new ); % step cannot exceed range
+    % t_step = 0.5;
     % disp(t_new);
     t_l = t_l - (2 * t_step);
     % disp(t_l);
     n = length(A); % Max dim
     Q = zeros(n,m+1); % Orthonormal basis, n by k+1 array
     R = zeros(n,m+1);
-    T = zeros(m+2, m+2); % zero padding for some (unknown to me) reason
+    T = zeros(m+3, m+3); % zero padding for some (unknown to me) reason
 
     Q(:,1) = v/norm(v); % Arbitrary vector with norm 1
     Q(:,1) = Q(:,1)/norm(Q(:,1));
@@ -68,14 +69,14 @@ while (t_end - t_now) > 0 % while range is high
             R(:,j+1) = R(:,j+1)-T(j, j-1)*R(:,j-1); 
         end
         T(j+1,j) = norm(Q(:,j+1));
-        if norm(Q(:,j+1)) < 1e-7
+        if norm(T(j+1,j)) < 1e-7 % catch divide by 0
             k1 = 0;
             mb = j;
             t_step = t_out-t_now;
             break;
         end
         T(j,j+1) = R(:,j+1)'*Q(:,j+1);
-        if norm(R(:,j+1)) < 1e-7
+        if (norm(T(j,j+1)) < 1e-7) || (norm(R(:,j+1)) < 1e-7)
             k1 = 0;
             mb = j;
             t_step = t_out-t_now;
@@ -85,7 +86,9 @@ while (t_end - t_now) > 0 % while range is high
         R(:,j+1) = R(:,j+1)/T(j,j+1);
     end
     if k1 ~= 0
-        T(m+2,m+2) = 1;
+        %T(m+2,m+1) = 1;
+        T(m+2,m+1) = 1;
+        T(m+3,m+2) = 1;
         avnorm = norm(A*Q(:,m+1));
     end
     ireject = 0;
@@ -96,8 +99,8 @@ while (t_end - t_now) > 0 % while range is high
             err_loc = btol;
             break;
         else
-            phi1 = abs( beta1*F(m+1,1) );
-            phi2 = abs( beta1*F(m+2,1) * avnorm );
+            phi1 = abs( beta1*F(m+2,1) );
+            phi2 = abs( beta1*F(m+3,1) * avnorm );
             if phi1 > 10*phi2
                 err_loc = phi2;
                 xm = 1/m;
@@ -121,8 +124,9 @@ while (t_end - t_now) > 0 % while range is high
             ireject = ireject + 1;
         end
     end
-    mx = mb + max( 0,k1-1 );
+    mx = mb + max( 0,k1-2 );
     
+    % Equations for calculating result
     if k1 ~= 0
         w1 = Q(:,1:mx)*(beta1*F(1:mx,1)); % right vector
         beta1 = norm( w1 ); % distinct beta

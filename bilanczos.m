@@ -38,12 +38,12 @@ for j = 1:k
     end
     
     T(j+1,j) = norm(Q(:,j+1));
-    if norm(Q(:,j+1)) < 1e-7
+    if norm(T(j+1,j)) < 1e-7
         break;
     end
     Q(:,j+1) = Q(:,j+1)/T(j+1,j);
     T(j,j+1) = R(:,j+1)'*Q(:,j+1);
-    if norm(R(:,j+1)) < 1e-7
+    if norm(T(j,j+1)) < 1e-7
         break;
     end
     R(:,j+1) = R(:,j+1)/T(j,j+1);
