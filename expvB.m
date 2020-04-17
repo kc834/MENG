@@ -67,7 +67,6 @@ while (t_end - t_now) > 0 % while range is high
             Q(:,j+1) = Q(:,j+1)-T(j-1, j)*Q(:,j-1); 
             R(:,j+1) = R(:,j+1)-T(j, j-1)*R(:,j-1); 
         end
-
         T(j+1,j) = norm(Q(:,j+1));
         if norm(Q(:,j+1)) < 1e-7
             k1 = 0;
@@ -86,6 +85,7 @@ while (t_end - t_now) > 0 % while range is high
         R(:,j+1) = R(:,j+1)/T(j,j+1);
     end
     if k1 ~= 0
+        T(m+2,m+2) = 1;
         avnorm = norm(A*Q(:,m+1));
     end
     ireject = 0;
@@ -132,6 +132,7 @@ while (t_end - t_now) > 0 % while range is high
         hump2 = max(hump2,beta2);
         y = w2'*w1;
     else
+        % y = norm(u) * norm(v) * R(:, 1)' * Q * F(:, 1);
         y = norm(u) * norm(v) * R(1:mx, 1)' * Q(1:mx, 1:mx) * F(1:mx, 1);
     end
     

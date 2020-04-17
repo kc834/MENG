@@ -41,48 +41,45 @@ for j = 1:k
     if norm(Q(:,j+1)) < 1e-7
         break;
     end
+    Q(:,j+1) = Q(:,j+1)/T(j+1,j);
     T(j,j+1) = R(:,j+1)'*Q(:,j+1);
     if norm(R(:,j+1)) < 1e-7
         break;
     end
-    Q(:,j+1) = Q(:,j+1)/T(j+1,j);
     R(:,j+1) = R(:,j+1)/T(j,j+1);
 end
 
-disp(Q);
-disp(R);
-disp(T);
-disp(Q(:, 1:k+1)*T(1:k+1, 1:k));
-disp(A*Q(:, 1:k));
-eqQ = all(ismembertol(Q(:, 1:k+1)*T(1:k+1, 1:k),A*Q(:, 1:k), 1e-7), 'all');
-if eqQ
-    disp("good eqQ");
-else
-    disp("bad eqQ");
-end
+% disp(Q);
+% disp(R);
+% disp(T);
+% disp(Q(:, 1:k+1)*T(1:k+1, 1:k));
+% disp(A*Q(:, 1:k));
+% eqQ = all(ismembertol(Q(:, 1:k+1)*T(1:k+1, 1:k),A*Q(:, 1:k), 1e-7), 'all');
+% if eqQ
+%     disp("good eqQ");
+% else
+%     disp("bad eqQ");
+% end
+% 
+% disp(R(:, 1:k+1)*T(1:k, 1:k+1)');
+% disp(A'*R(:, 1:k));
+% eqR = all(ismembertol(R(:, 1:k+1)*T(1:k, 1:k+1)',A'*R(:, 1:k), 1e-7), 'all');
+% if eqR
+%     disp("good eqR");
+% else
+%     disp("bad eqR");
+% end
 
-disp(R(:, 1:k+1)*T(1:k, 1:k+1)');
-disp(A'*R(:, 1:k));
-eqR = all(ismembertol(R(:, 1:k+1)*T(1:k, 1:k+1)',A'*R(:, 1:k), 1e-7), 'all');
-if eqR
-    disp("good eqR");
-else
-    disp("bad eqR");
-end
+out = norm(u) * norm(v) * R(:, 1)' * Q * T(:, 1);
 
-out = norm(u) * norm(v) * R(1:k, 1)' * Q(1:k, 1:k) * T(1:k, 1);
-
-disp(Q(:, :)'*R(:, :));
+% disp(Q(:, 1:k)'*R(:, 1:k));
 disp(R(:, :)'*Q(:, :));
-eqI = all(ismembertol(Q(:, 1:k)'*R(:, 1:k),R(:, 1:k)'*Q(:, 1:k), 1e-7), 'all');
-if eqI
-    disp("good eqI");
-else
-    disp("bad eqI");
-end
-
-% Either the last column of Q and R are wrong
-% Or 
+% eqI = all(ismembertol(Q(:, 1:k)'*R(:, 1:k),R(:, 1:k)'*Q(:, 1:k), 1e-7), 'all');
+% if eqI
+%     disp("good eqI");
+% else
+%     disp("bad eqI");
+% end
 
 %  ======================== OLD CODE =======================
 

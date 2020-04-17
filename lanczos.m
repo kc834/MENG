@@ -53,16 +53,16 @@ for j = 1:k
     Q(:,j+1) = Q(:,j+1)/T(j+1,j); 
 end
 
-disp(Q);
-disp(T);
-disp(Q*T);
-disp(A*Q(:, 1:k));
-eq = all(ismembertol(Q*T,A*Q(:, 1:k), 1e-7), 'all');
-if eq
-    disp("good");
-else
-    disp("bad");
-end
+% disp(Q);
+% disp(T);
+% disp(Q*T);
+% disp(A*Q(:, 1:k));
+% eq = all(ismembertol(Q*T,A*Q(:, 1:k), 1e-7), 'all');
+% if eq
+%     disp("good");
+% else
+%     disp("bad");
+% end
 
 w = Q(:,1:k)*(norm(v)*T(1:k,1));
 out = u'*w;
