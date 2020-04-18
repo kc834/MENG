@@ -18,6 +18,8 @@ delta = 1.2;
 mb    = m; % dimension
 t_out   = abs(t); % absolute value of time
 t_step = 0;
+t_step_left = 0;
+t_step_right = 0;
 nstep = 0; 
 t_left = 0; 
 t_right = t_out; % Added to modify code for range
@@ -31,10 +33,10 @@ k1 = 2;
 xm_right = 1/m; 
 normv = norm(v); % Euclidean norm 
 beta1 = normv;
-normuv = norm(v' * u); % Euclidean norm 
-if isreal(v) && isreal(u) && isreal(A)
-    normuv = norm(normuv);
-end
+normuv = u' * v; % Euclidean norm 
+% if isreal(v) && isreal(u) && isreal(A)
+%     normuv = norm(normuv);
+% end
 beta2 = normuv; 
 fact = (((m+1)/exp(1))^(m+1))*sqrt(2*pi*(m+1));
 
@@ -72,7 +74,7 @@ while (t_right - t_left) > 0
     for j = 1:m 
         Q(:,j+1) = A*Q(:,j);
         R(:,j+1) = A'*R(:,j);
-        T(j,j) = R(:,j)'*Q(:,j+1);
+        T(j,j) = Q(:,j+1)'*R(:,j);
         Q(:,j+1) = Q(:,j+1)-T(j,j)*Q(:,j); 
         R(:,j+1) = R(:,j+1)-T(j,j)*R(:,j); 
         if j > 1 
@@ -87,7 +89,7 @@ while (t_right - t_left) > 0
             break;
         end
         Q(:,j+1) = Q(:,j+1)/T(j+1,j);
-        T(j,j+1) = R(:,j+1)'*Q(:,j+1);
+        T(j,j+1) = Q(:,j+1)'*R(:,j+1);
         if (norm(R(:,j+1)) < 1e-7) % happy breakdown
             k1 = 0;
             mb = j;
@@ -172,12 +174,16 @@ while (t_right - t_left) > 0
             break;
         else
             if ireject == mxrej
-                error('The requested tolerance is too high.');
+                abort = 1;
+                warning('The requested tolerance is too high.');
+                break;
             end
             ireject = ireject + 1;
         end
     end
-    
+    if (abort)
+        break;
+    end
     mx = mb + max( 0,k1-1 );
     
     % Equations for calculating result
@@ -190,7 +196,10 @@ while (t_right - t_left) > 0
         
         % left vector uses transpose
         w2 = R(:,1:mx)*(beta2*F_left(1,1:mx)');
-        beta2 = norm( w1' * w2 );
+        beta2 = w1' * w2;
+%         if isreal(v) && isreal(u) && isreal(A)
+%             beta2 = norm(beta2);
+%         end
         hump2 = max(hump2,beta2);
         t_left = t_left + t_step_left;
         
@@ -203,7 +212,10 @@ while (t_right - t_left) > 0
         t_new_right = ceil(t_new_right/s)*s;
         
         % Left side time step
-        t_new_left = (1/anorm)*((fact*tol)/(4*beta2*anorm))^xm_right;
+        t_new_left = (1/anorm)*((fact*tol)/(4*norm(beta2)*anorm))^xm_right;
+        if (~isreal(t_new_left))
+            disp("error");
+        end
         s = 10^(floor(log10(t_new_left))-1); 
         t_new_left = ceil(t_new_left/s)*s; 
         
@@ -221,6 +233,7 @@ end
 if (abort)
     y = 100;
 end
+disp('Number of steps, expvB');
 disp(nstep);
 err = s_error;
 hump1 = hump1 / normv;

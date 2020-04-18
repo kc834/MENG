@@ -28,12 +28,12 @@ Q(:,1) = v; % Arbitrary vector with norm 1
 normv = norm(Q(:,1)); % beta1 = normv, beta2 = normu * normv
 Q(:,1) = Q(:,1)/normv;
 R(:,1) = u;
-normuv = norm(Q(:,1)'*R(:,1));
+normuv = Q(:,1)'*R(:,1);
 R(:,1) = R(:,1)/normuv;
 for j = 1:k
     Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace
     R(:,j+1) = A'*R(:,j);
-    T(j,j) = R(:,j)'*Q(:,j+1);
+    T(j,j) = Q(:,j+1)'*R(:,j);
     Q(:,j+1) = Q(:,j+1)-T(j,j)*Q(:,j); 
     R(:,j+1) = R(:,j+1)-T(j,j)*R(:,j); 
     if j > 1 
@@ -46,14 +46,13 @@ for j = 1:k
         break;
     end
     Q(:,j+1) = Q(:,j+1)/T(j+1,j);
-    T(j,j+1) = R(:,j+1)'*Q(:,j+1);
+    T(j,j+1) = Q(:,j+1)'*R(:,j+1);
     if norm(T(j,j+1)) < 1e-7
         break;
     end
     R(:,j+1) = R(:,j+1)/T(j,j+1);
 end
 
-T
 % disp(Q);
 % disp(R);
 % disp(T);
@@ -75,10 +74,10 @@ T
 %     disp("bad eqR");
 % end
 
-out = normuv * normv * R(:, 1)' * Q * T(:, 1);
+out = normuv' * normv * R(:, 1)' * Q * T(:, 1);
 
-disp(Q(:, 1:k)'*R(:, 1:k));
-% disp(R(:, :)'*Q(:, :));
+% disp(Q(:, 1:k)'*R(:, 1:k));
+disp(R(:, :)'*Q(:, :));
 % eqI = all(ismembertol(Q(:, 1:k)'*R(:, 1:k),R(:, 1:k)'*Q(:, 1:k), 1e-7), 'all');
 % if eqI
 %     disp("good eqI");

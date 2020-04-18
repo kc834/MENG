@@ -39,7 +39,7 @@ T = zeros(k+1, k);
 Q(:,1) = v/norm(v); % Arbitrary vector with norm 1
 for j = 1:k 
     Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace 
-    T(j,j) = Q(:,j)'*Q(:,j+1);  
+    T(j,j) = Q(:,j+1)'*Q(:,j);  
     Q(:,j+1) = Q(:,j+1)-T(j,j)*Q(:,j); 
     if j > 1 
         Q(:,j+1) = Q(:,j+1)-T(j,j-1)*Q(:,j-1); 

@@ -22,22 +22,31 @@ function error = utfAv_SingleArnoldi(u,A,t,v,tol,m)
 % here f(A) is exp(-At)
 % not important for the math, but just putting it out here: t in 1/Gauss units, A is in Gauss
 
+tic
 [w, err, hump] = expv( -t, A, v, tol, m );
 % err and hump have some use, maybe when you are doing an error analysis
 % they matter
 
 % return the answer after taking a dot product with u
 y = u'*w; % should be a scalar
+toc
 
-disp(y);
+%disp(' ');
+%disp('Result, expv');
+%disp(y);
 
+tic
 % The BiLanczos implementation
 [yexp, err, hump1, hump2] = expvB( -t, A, u, v, tol, m );
+toc
 
-disp(yexp);
+%disp(' ');
+%disp('Result, expvB');
+%disp(yexp);
 
 error = norm((y - yexp)/y);
 
+disp('Error');
 disp(error);
 
 end
