@@ -1,6 +1,6 @@
  %for k = 1:1
-    m = 2000;
-    t = 1;
+    m = 30;
+    t = 3.5;
     tol = 1e-7;
     atol = 0.001;
     A = rand(m);
@@ -12,8 +12,8 @@
     A = sparse(A);
     u = rand(m,1);
     v = rand(m,1);
-    if (utfAv_SingleArnoldi(u,A,t,v,tol,m) > atol)
+    if (utfAv_SingleArnoldi(u,A,t,v,tol,30) > atol)
         disp("FAIL");
-        disp(k);
+        % disp(k);
     end
  % end

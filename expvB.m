@@ -30,8 +30,11 @@ err_loc_right = 0;
 k1 = 2;
 xm_right = 1/m; 
 normv = norm(v); % Euclidean norm 
-beta1 = normv; 
+beta1 = normv;
 normuv = norm(v' * u); % Euclidean norm 
+if isreal(v) && isreal(u) && isreal(A)
+    normuv = norm(normuv);
+end
 beta2 = normuv; 
 fact = (((m+1)/exp(1))^(m+1))*sqrt(2*pi*(m+1));
 
@@ -53,7 +56,7 @@ w1 = v;
 w2 = u;
 hump1 = normv;
 hump2 = normuv;
-serious_breakdown = 0;
+abort = 0;
 while (t_right - t_left) > 0
     % Determine step size
     nstep = nstep + 1;
@@ -91,19 +94,19 @@ while (t_right - t_left) > 0
             t_step = t_right-t_left;
             break;
         end
-        if (norm(T(j,j+1)) < 1e-7) %serious breakdown
-            serious_breakdown = 1;
+        if (norm(T(j,j+1)) < 1e-7) % serious breakdown
+            abort = 1;
             warning('SERIOUS BREAKDOWN');
             break;
         end
         R(:,j+1) = R(:,j+1)/T(j,j+1);
     end
     % ========== Timestep Calculation ==========
-    if (serious_breakdown)
+    if (abort)
         break;
     end
     if k1 ~= 0
-        T(m+2,m+1) = 1; % TODO: verify if correct for bilanczos
+        T(m+2,m+1) = 1;
         avnorm = norm(A*Q(:,m+1));
     end
     ireject = 0;
@@ -111,6 +114,8 @@ while (t_right - t_left) > 0
     left_not_done = 1;
     while (ireject <= mxrej)
         mx = mb + k1;
+        F = expm(sgn*T(1:mx,1:mx));
+        % y = beta2 * R(:, 1)' * Q(:, :) * F(1:mx-1, 1);
         if k1 == 0 % happy_breakdown, one-step execution
             F = expm(sgn*t_step*T(1:mx,1:mx));
             err_loc = btol;
@@ -135,8 +140,8 @@ while (t_right - t_left) > 0
             % Left vector step
             if (left_not_done)
                 F_left = expm(sgn*t_step_left*T(1:mx,1:mx));
-                phi1_left = abs( beta1*F_left(m+1,1) );
-                phi2_left = abs( beta1*F_left(m+2,1) * avnorm );
+                phi1_left = abs( beta2*F_left(m+1,1) );
+                phi2_left = abs( beta2*F_left(m+2,1) * avnorm );
                 if phi1_left > 10*phi2_left
                     err_loc_left = phi2_left;
                     xm_left = 1/m;
@@ -173,7 +178,6 @@ while (t_right - t_left) > 0
         end
     end
     
-    % TODO: verify if correct
     mx = mb + max( 0,k1-1 );
     
     % Equations for calculating result
@@ -204,7 +208,7 @@ while (t_right - t_left) > 0
         t_new_left = ceil(t_new_left/s)*s; 
         
     else % happy_breakdown
-        y = beta2 * R(1:mx, 1)' * Q(1:mx, 1:mx) * F(1:mx, 1);
+        y = beta2' * R(1:mx, 1)' * Q(1:mx, 1:mx) * F(1:mx, 1);
         t_left = t_right;
     end
 
@@ -214,9 +218,10 @@ while (t_right - t_left) > 0
     s_error = s_error + err_loc_right + err_loc_left + err_loc;
     % disp(t_end - t_now);
 end
-if (serious_breakdown)
+if (abort)
     y = 100;
 end
+disp(nstep);
 err = s_error;
 hump1 = hump1 / normv;
 hump2 = hump2 / normuv;

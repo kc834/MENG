@@ -53,9 +53,10 @@ for j = 1:k
     R(:,j+1) = R(:,j+1)/T(j,j+1);
 end
 
+T
 % disp(Q);
 % disp(R);
-disp(T);
+% disp(T);
 % disp(Q(:, 1:k+1)*T(1:k+1, 1:k));
 % disp(A*Q(:, 1:k));
 % eqQ = all(ismembertol(Q(:, 1:k+1)*T(1:k+1, 1:k),A*Q(:, 1:k), 1e-7), 'all');
@@ -76,7 +77,7 @@ disp(T);
 
 out = normuv * normv * R(:, 1)' * Q * T(:, 1);
 
-% disp(Q(:, 1:k)'*R(:, 1:k));
+disp(Q(:, 1:k)'*R(:, 1:k));
 % disp(R(:, :)'*Q(:, :));
 % eqI = all(ismembertol(Q(:, 1:k)'*R(:, 1:k),R(:, 1:k)'*Q(:, 1:k), 1e-7), 'all');
 % if eqI

@@ -19,16 +19,19 @@ mb    = m; % dimension
 t_out   = abs(t); % absolute value of time
 t_step = 0;
 nstep = 0; 
-t_now = 0; 
-t_end = t_out; % Added to modify code for range
+t_left = 0; 
+t_right = t_out; % Added to modify code for range
 s_error = 0;
 rndoff= anorm*eps;
+err_loc = 0;
+err_loc_left = 0;
+err_loc_right = 0;
 
 k1 = 2;
 xm_right = 1/m; 
 normv = norm(v); % Euclidean norm 
 beta1 = normv; 
-normuv = norm(v' * u); % Euclidean norm 
+normuv = v' * u; % Euclidean norm 
 beta2 = normuv; 
 fact = (((m+1)/exp(1))^(m+1))*sqrt(2*pi*(m+1));
 
@@ -50,11 +53,12 @@ w1 = v;
 w2 = u;
 hump1 = normv;
 hump2 = normuv;
-while (t_end - t_now) > 0 % while range is high
+serious_breakdown = 0;
+while (t_right - t_left) > 0
     % Determine step size
     nstep = nstep + 1;
-    t_step_right = min( (t_end-t_now)/2,t_new_right ); % step cannot exceed range
-    t_step_left = min( (t_end-t_now)/2,t_new_left );
+    t_step_right = min( (t_right-t_left)/2,t_new_right ); % step cannot exceed range
+    t_step_left = min( (t_right-t_left)/2,t_new_left );
     % ========== Bi-Lanczos Implementation ==========
     n = length(A); 
     Q = zeros(n,m+1); % Right hand vectors
@@ -76,23 +80,30 @@ while (t_end - t_now) > 0 % while range is high
         if norm(T(j+1,j)) < 1e-7 % happy_breakdown, catch divide by 0
             k1 = 0;
             mb = j;
-            t_step = t_out-t_now;
+            t_step = t_right-t_left;
             break;
         end
         Q(:,j+1) = Q(:,j+1)/T(j+1,j);
         T(j,j+1) = R(:,j+1)'*Q(:,j+1);
-        if (norm(T(j,j+1)) < 1e-7) || (norm(R(:,j+1)) < 1e-7) % happy and serious breakdown
-            % TODO: handle serious breakdown
+        if (norm(R(:,j+1)) < 1e-7) % happy breakdown
             k1 = 0;
             mb = j;
-            t_step = t_out-t_now;
+            t_step = t_right-t_left;
+            break;
+        end
+        if (norm(T(j,j+1)) < 1e-7) % serious breakdown
+            serious_breakdown = 1;
+            warning('SERIOUS BREAKDOWN');
             break;
         end
         R(:,j+1) = R(:,j+1)/T(j,j+1);
     end
     % ========== Timestep Calculation ==========
+    if (serious_breakdown)
+        break;
+    end
     if k1 ~= 0
-        T(m+2,m+1) = 1; % TODO: verify if correct for bilanczos
+        T(m+2,m+1) = 1;
         avnorm = norm(A*Q(:,m+1));
     end
     ireject = 0;
@@ -100,9 +111,9 @@ while (t_end - t_now) > 0 % while range is high
     left_not_done = 1;
     while (ireject <= mxrej)
         mx = mb + k1;
-        if k1 == 0 % One-step execution
+        if k1 == 0 % happy_breakdown, one-step execution
             F = expm(sgn*t_step*T(1:mx,1:mx));
-            err_loc_right = btol;
+            err_loc = btol;
             break;
         else  % Two-step execution TODO: refactor or use a different data structure
             % Right vector step
@@ -124,8 +135,8 @@ while (t_end - t_now) > 0 % while range is high
             % Left vector step
             if (left_not_done)
                 F_left = expm(sgn*t_step_left*T(1:mx,1:mx));
-                phi1_left = abs( beta1*F_left(m+1,1) );
-                phi2_left = abs( beta1*F_left(m+2,1) * avnorm );
+                phi1_left = abs( beta2*F_left(m+1,1) );
+                phi2_left = abs( beta2*F_left(m+2,1) * avnorm );
                 if phi1_left > 10*phi2_left
                     err_loc_left = phi2_left;
                     xm_left = 1/m;
@@ -161,35 +172,52 @@ while (t_end - t_now) > 0 % while range is high
             ireject = ireject + 1;
         end
     end
+    
     mx = mb + max( 0,k1-1 );
     
     % Equations for calculating result
-    if k1 ~= 0
+    if k1 ~= 0 
         % right vector
-        w1 = Q(:,1:mx)*(beta1*F(1:mx,1));
+        w1 = Q(:,1:mx)*(F_right(1:mx,1));
         beta1 = norm( w1 );
         hump1 = max(hump1,beta1);
+        t_right = t_right - t_step_right;
+        
         % left vector uses transpose
-        w2 = R(:,1:mx)*(beta2*F(1,1:mx)');
-        beta2 = norm( w1' * w2 );
+        w2 = R(:,1:mx)*(beta2'*F_left(1,1:mx)');
+        beta2 = w1' * w2;
         hump2 = max(hump2,beta2);
-        y = w2'*w1;
-    else
-        % y = norm(u) * norm(v) * R(:, 1)' * Q * F(:, 1);
-        y = beta1 * beta2 * R(1:mx, 1)' * Q(1:mx, 1:mx) * F(1:mx, 1);
+        t_left = t_left + t_step_left;
+        
+        % Answer
+        y = w1'*w2;
+        
+        % Right side time step
+        t_new_right = (1/anorm)*((fact*tol)/(4*beta1*anorm))^xm_right;
+        s = 10^(floor(log10(t_new_right))-1); 
+        t_new_right = ceil(t_new_right/s)*s;
+        
+        % Left side time step
+        t_new_left = (1/anorm)*((fact*tol)/(4*beta2*anorm))^xm_right;
+        s = 10^(floor(log10(t_new_left))-1); 
+        t_new_left = ceil(t_new_left/s)*s; 
+        
+    else % happy_breakdown
+        y = beta2' * R(1:mx, 1)' * Q(1:mx, 1:mx) * F(1:mx, 1);
+        t_left = t_right;
     end
-    
-    t_now = t_now + t_step;
-    t_end = t_end - t_step;
-    t_new = gamma1 * t_step * (t_step*tol/err_loc_right)^xm_right;
-    s = 10^(floor(log10(t_new))-1);
-    t_new = ceil(t_new/s) * s;
-    
+
     err_loc_right = max(err_loc_right,rndoff);
-    s_error = s_error + err_loc_right;
+    err_loc_left = max(err_loc_left,rndoff);
+    err_loc = max(err_loc,rndoff);
+    s_error = s_error + err_loc_right + err_loc_left + err_loc;
     % disp(t_end - t_now);
 end
+if (serious_breakdown)
+    y = 100;
+end
+disp(nstep);
 err = s_error;
 hump1 = hump1 / normv;
-hump2 = hump2 / normu;
+hump2 = hump2 / normuv;
 % y = w2 * w1;

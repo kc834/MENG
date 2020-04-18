@@ -1,16 +1,19 @@
-m = 4;
+m = 40;
 t = 1;
 tol = 1e-7;
 atol = 0.001;
 A = rand(m) + 1i * rand(m);
+A = A'*A;
+A = A/m;
 for j = 1:m
-for i = 1:m
-if rand < 0.5, A(i,j) = 0; end
+for i = j:m
+if rand < 0.5, A(i,j) = 0; A(j,i) = 0; end
 end
 end
-u = rand(m,1) + 1i * rand(m,1);
-v = rand(m,1) + 1i * rand(m,1);
+% ishermitian(A)
+u = eye(m,1) + 2i *  eye(m,1);
+v = eye(m,1) + 3i * eye(m,1);
 if (utfAv_SingleArnoldi(u,A,t,v,tol,m) > atol)
     disp("FAIL");
-    disp(k);
+    %disp(k);
 end
