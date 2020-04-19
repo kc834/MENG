@@ -31,22 +31,22 @@ tic
 y = u'*w; % should be a scalar
 toc
 
-% disp(' ');
-% disp('Result, expv');
-% disp(y);
+disp(' ');
+disp('Result, expv');
+disp(y);
 
 tic
 % The BiLanczos implementation
 [yexp, err, hump1, hump2] = expvB( -t, A, u, v, tol, m );
 toc
 
-% disp(' ');
-% disp('Result, expvB');
-% disp(yexp);
+disp(' ');
+disp('Result, expvB');
+disp(yexp);
 
 error = norm((y - yexp)/y);
 
-% disp('Error');
+disp('Error');
 disp(error);
 
 end

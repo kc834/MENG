@@ -118,7 +118,7 @@ while (t_right - t_left) > 0
     left_not_done = 1;
     while (ireject <= mxrej)
         mx = mb + k1;
-        F = expm(sgn*T(1:mx,1:mx));
+        % F = T;
         % y = beta2 * R(:, 1)' * Q(:, :) * F(1:mx-1, 1);
         if k1 == 0 % happy_breakdown, one-step execution
             F = expm(sgn*t_step*T(1:mx,1:mx));
@@ -219,7 +219,7 @@ while (t_right - t_left) > 0
         t_new_left = ceil(t_new_left/s)*s; 
         
     else % happy_breakdown
-        y = beta2' * F(1:mx, 1)' * R(1:mx, 1:mx)' * Q(1:mx, 1);
+        y = beta2' * F(1:mx, 1)' * R(1:m, 1:mx)' * Q(1:m, 1);
         % y = beta2' * R(1:mx, 1)' * Q(1:mx, 1:mx) * F(1:mx, 1);
         t_left = t_right;
     end
@@ -235,10 +235,10 @@ if (abort)
 end
 if k1 ~= 0
     % Answer
-    y = w2'*w1;
+    y = w1'*w2;
 end
-% disp('Number of steps, expvB');
-% disp(nstep);
+disp('Number of steps, expvB');
+disp(nstep);
 err = s_error;
 hump1 = hump1 / normv;
 hump2 = hump2 / normuv;
