@@ -33,7 +33,7 @@ k1 = 2;
 xm_right = 1/m; 
 normv = norm(v); % Euclidean norm 
 beta1 = normv;
-normuv = v' * u; % Euclidean norm 
+normuv = u' * v; % Euclidean norm 
 % if isreal(v) && isreal(u) && isreal(A)
 %     normuv = norm(normuv);
 % end
@@ -59,6 +59,7 @@ w2 = u;
 hump1 = normv;
 hump2 = normuv;
 abort = 0;
+y = beta2';
 while (t_right - t_left) > 0
     % Determine step size
     nstep = nstep + 1;
@@ -70,16 +71,16 @@ while (t_right - t_left) > 0
     R = zeros(n,m+1); % Left hand vectors
     T = zeros(m+2, m+2); % Tridiagonal matrix with zero-padding
     Q(:,1) = w1/beta1;
-    R(:,1) = beta1 * w2/beta2;
+    R(:,1) = beta1 * w2/(beta2');
     for j = 1:m 
         Q(:,j+1) = A*Q(:,j);
         R(:,j+1) = A'*R(:,j);
-        T(j,j) = Q(:,j+1)'*R(:,j);
-        Q(:,j+1) = Q(:,j+1)-T(j,j)'*Q(:,j); 
-        R(:,j+1) = R(:,j+1)-T(j,j)*R(:,j); 
+        T(j,j) = R(:,j)'*Q(:,j+1);
+        Q(:,j+1) = Q(:,j+1)-T(j,j)*Q(:,j); 
+        R(:,j+1) = R(:,j+1)-T(j,j)'*R(:,j); 
         if j > 1 
-            Q(:,j+1) = Q(:,j+1)-T(j-1, j)'*Q(:,j-1); 
-            R(:,j+1) = R(:,j+1)-T(j, j-1)*R(:,j-1); 
+            Q(:,j+1) = Q(:,j+1)-T(j-1, j)*Q(:,j-1); 
+            R(:,j+1) = R(:,j+1)-T(j, j-1)'*R(:,j-1); 
         end
         T(j+1,j) = norm(Q(:,j+1));
         if norm(T(j+1,j)) < 1e-7 % happy_breakdown, catch divide by 0
@@ -89,7 +90,7 @@ while (t_right - t_left) > 0
             break;
         end
         Q(:,j+1) = Q(:,j+1)/T(j+1,j);
-        T(j,j+1) = Q(:,j+1)'*R(:,j+1);
+        T(j,j+1) = R(:,j+1)'*Q(:,j+1);
         if (norm(R(:,j+1)) < 1e-7) % happy breakdown
             k1 = 0;
             mb = j;
@@ -101,10 +102,9 @@ while (t_right - t_left) > 0
             warning('SERIOUS BREAKDOWN');
             break;
         end
-        R(:,j+1) = R(:,j+1)/T(j,j+1);
+        R(:,j+1) = R(:,j+1)/(T(j,j+1)');
     end
     % ========== Timestep Calculation ==========
-    % disp(Q'*R);
     if (abort)
         break;
     end
@@ -197,8 +197,9 @@ while (t_right - t_left) > 0
         t_right = t_right - t_step_right;
         
         % left vector uses transpose
-        w2 = R(:,1:mx)*(beta2*F_left(1,1:mx)');
-        beta2 = w1' * w2;
+        w2 = beta2'*R(:,1:mx)*F_left(1,1:mx)';
+        
+        beta2 = w2' * w1;
 %         if isreal(v) && isreal(u) && isreal(A)
 %             beta2 = norm(beta2);
 %         end
@@ -219,8 +220,8 @@ while (t_right - t_left) > 0
         t_new_left = ceil(t_new_left/s)*s; 
         
     else % happy_breakdown
-        y = beta2' * F(1:mx, 1)' * R(1:m, 1:mx)' * Q(1:m, 1);
-        % y = beta2' * R(1:mx, 1)' * Q(1:mx, 1:mx) * F(1:mx, 1);
+        y = (beta2' * F(1, 1)')';
+        % y = beta2' * F(:, 1)' * R' * Q(:, 1);
         t_left = t_right;
     end
 
@@ -235,10 +236,11 @@ if (abort)
 end
 if k1 ~= 0
     % Answer
-    y = w1'*w2;
+    y = w2'*w1;
 end
 disp('Number of steps, expvB');
 disp(nstep);
+% disp(y);
 err = s_error;
 hump1 = hump1 / normv;
 hump2 = hump2 / normuv;

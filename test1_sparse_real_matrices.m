@@ -1,9 +1,9 @@
 fails = 0; 
-iter = 100;
+iter = 10;
 for k = 1:iter
     disp(k);
     m = 800;
-    t = 2;
+    t = 4;
     tol = 1e-7;
     atol = 0.001;
     A = rand(m);
@@ -15,11 +15,10 @@ for k = 1:iter
     A = sparse(A);
     u = rand(m,1);
     v = rand(m,1);
-    out = utfAv_SingleArnoldi(u,A,t,v,tol,30);
-    while (out > atol)
-        disp("RESTARTING");
+    if (utfAv_SingleArnoldi(u,A,t,v,tol,min(m, 30)) > atol)
+        disp("FAIL");
         fails = fails + 1;
-        out = utfAv_SingleArnoldi(u,A,t,v,tol,30);
+        %disp(k);
     end
 end
 fail_rate = (fails)/iter;
