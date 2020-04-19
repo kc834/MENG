@@ -34,10 +34,10 @@ for j = 1:k
     Q(:,j+1) = A*Q(:,j); % Move on to next vector in Krylov subspace
     R(:,j+1) = A'*R(:,j);
     T(j,j) = Q(:,j+1)'*R(:,j);
-    Q(:,j+1) = Q(:,j+1)-T(j,j)*Q(:,j); 
+    Q(:,j+1) = Q(:,j+1)-T(j,j)'*Q(:,j); 
     R(:,j+1) = R(:,j+1)-T(j,j)*R(:,j); 
     if j > 1 
-        Q(:,j+1) = Q(:,j+1)-T(j-1, j)*Q(:,j-1); 
+        Q(:,j+1) = Q(:,j+1)-T(j-1, j)'*Q(:,j-1); 
         R(:,j+1) = R(:,j+1)-T(j, j-1)*R(:,j-1); 
     end
     
@@ -74,7 +74,7 @@ end
 %     disp("bad eqR");
 % end
 
-out = normuv' * normv * R(:, 1)' * Q * T(:, 1);
+out = normuv' * normv * T(:, 1)' * R' * Q(:, 1);
 
 % disp(Q(:, 1:k)'*R(:, 1:k));
 disp(R(:, :)'*Q(:, :));

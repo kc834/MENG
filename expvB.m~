@@ -33,7 +33,7 @@ k1 = 2;
 xm_right = 1/m; 
 normv = norm(v); % Euclidean norm 
 beta1 = normv;
-normuv = u' * v; % Euclidean norm 
+normuv = v' * u; % Euclidean norm 
 % if isreal(v) && isreal(u) && isreal(A)
 %     normuv = norm(normuv);
 % end
@@ -46,7 +46,7 @@ s = 10^(floor(log10(t_new_right))-1);
 t_new_right = ceil(t_new_right/s)*s; 
 
 % Left side time step
-t_new_left = (1/anorm)*((fact*tol)/(4*beta2*anorm))^xm_right;
+t_new_left = (1/anorm)*((fact*tol)/(4*norm(beta2)*anorm))^xm_right;
 s = 10^(floor(log10(t_new_left))-1); 
 t_new_left = ceil(t_new_left/s)*s; 
 
@@ -75,10 +75,10 @@ while (t_right - t_left) > 0
         Q(:,j+1) = A*Q(:,j);
         R(:,j+1) = A'*R(:,j);
         T(j,j) = Q(:,j+1)'*R(:,j);
-        Q(:,j+1) = Q(:,j+1)-T(j,j)*Q(:,j); 
+        Q(:,j+1) = Q(:,j+1)-T(j,j)'*Q(:,j); 
         R(:,j+1) = R(:,j+1)-T(j,j)*R(:,j); 
         if j > 1 
-            Q(:,j+1) = Q(:,j+1)-T(j-1, j)*Q(:,j-1); 
+            Q(:,j+1) = Q(:,j+1)-T(j-1, j)'*Q(:,j-1); 
             R(:,j+1) = R(:,j+1)-T(j, j-1)*R(:,j-1); 
         end
         T(j+1,j) = norm(Q(:,j+1));
@@ -110,6 +110,7 @@ while (t_right - t_left) > 0
     if k1 ~= 0
         T(m+2,m+1) = 1;
         avnorm = norm(A*Q(:,m+1));
+        awnorm = norm(A'*R(:,m+1));
     end
     ireject = 0;
     right_not_done = 1;
@@ -122,12 +123,12 @@ while (t_right - t_left) > 0
             F = expm(sgn*t_step*T(1:mx,1:mx));
             err_loc = btol;
             break;
-        else  % Two-step execution TODO: refactor or use a different data structure
+        else  % Two-step execution TODO: refactor or use an array
             % Right vector step
             if (right_not_done)
                 F_right = expm(sgn*t_step_right*T(1:mx,1:mx));
-                phi1_right = abs( beta1*F_right(m+1,1) );
-                phi2_right = abs( beta1*F_right(m+2,1) * avnorm );
+                phi1_right = abs( norm(beta1)*F_right(m+1,1) );
+                phi2_right = abs( norm(beta1)*F_right(m+2,1) * avnorm );
                 if phi1_right > 10*phi2_right
                     err_loc_right = phi2_right;
                     xm_right = 1/m;
@@ -142,8 +143,8 @@ while (t_right - t_left) > 0
             % Left vector step
             if (left_not_done)
                 F_left = expm(sgn*t_step_left*T(1:mx,1:mx));
-                phi1_left = abs( beta2*F_left(m+1,1) );
-                phi2_left = abs( beta2*F_left(m+2,1) * avnorm );
+                phi1_left = abs( norm(beta2)*F_left(m+1,1) );
+                phi2_left = abs( norm(beta2)*F_left(m+2,1) * awnorm );
                 if phi1_left > 10*phi2_left
                     err_loc_left = phi2_left;
                     xm_left = 1/m;
@@ -174,12 +175,16 @@ while (t_right - t_left) > 0
             break;
         else
             if ireject == mxrej
-                error('The requested tolerance is too high.');
+                abort = 1;
+                warning('The requested tolerance is too high.');
+                break;
             end
             ireject = ireject + 1;
         end
     end
-    
+    if (abort)
+        break;
+    end
     mx = mb + max( 0,k1-1 );
     
     % Equations for calculating result
@@ -199,16 +204,16 @@ while (t_right - t_left) > 0
         hump2 = max(hump2,beta2);
         t_left = t_left + t_step_left;
         
-        % Answer
-        y = w2'*w1;
-        
         % Right side time step
         t_new_right = (1/anorm)*((fact*tol)/(4*beta1*anorm))^xm_right;
         s = 10^(floor(log10(t_new_right))-1); 
         t_new_right = ceil(t_new_right/s)*s;
         
         % Left side time step
-        t_new_left = (1/anorm)*((fact*tol)/(4*beta2*anorm))^xm_right;
+        t_new_left = (1/anorm)*((fact*tol)/(4*norm(beta2)*anorm))^xm_right;
+        if (~isreal(t_new_left))
+            disp("error");
+        end
         s = 10^(floor(log10(t_new_left))-1); 
         t_new_left = ceil(t_new_left/s)*s; 
         
@@ -225,6 +230,10 @@ while (t_right - t_left) > 0
 end
 if (abort)
     y = 100;
+end
+if k1 ~= 0
+    % Answer
+    y = w2'*w1;
 end
 disp('Number of steps, expvB');
 disp(nstep);
