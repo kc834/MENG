@@ -18,7 +18,7 @@ for j = 1:k
 
     % Get a vector in the next subspace (and its norm)
     Q(:,j+1) = A*Q(:,j);
-    norma = norm(Q(:,j+1));
+    % norma = norm(Q(:,j+1));
 
     % Modified Gram-Schmidt (standard Arnoldi)
     for l = 1:j

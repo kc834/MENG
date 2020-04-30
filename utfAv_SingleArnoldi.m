@@ -49,4 +49,8 @@ error = norm((y - yexp)/y);
 disp('Error');
 disp(error);
 
+if error > 0.001
+    disp(' check ');
+end
+
 end

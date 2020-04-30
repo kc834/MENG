@@ -90,7 +90,7 @@ end
 anorm = norm(A,'inf'); % maximum absolute row sum
 mxrej = 10;
 btol  = 1.0e-7; 
-gamma = 0.9; 
+gamma = 0.8; 
 delta = 1.2; 
 mb    = m; % dimension
 t_out   = abs(t); % absolute value of time
@@ -178,6 +178,7 @@ while t_now < t_out % comparing time
   beta = norm( w );
   hump = max(hump,beta);
 
+  %disp(t_step);
   t_now = t_now + t_step;
   t_new = gamma * t_step * (t_step*tol/err_loc)^xm;
   s = 10^(floor(log10(t_new))-1); 

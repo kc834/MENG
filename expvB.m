@@ -10,17 +10,15 @@ if nargin == 4
   m = min(n,30);
 end
 
+multiplier = 1;
 anorm = norm(A,'inf'); % maximum absolute row sum
 mxrej = 10;
 btol  = 1.0e-7; 
-gamma1 = 0.9; 
+gamma1 = 0.7; 
 delta = 1.2; 
 mb    = m; % dimension
 t_out   = abs(t); % absolute value of time
 t_step = 0;
-t_step_left = 0;
-t_step_right = 0;
-nstep = 0; 
 t_left = 0; 
 t_right = t_out; % Added to modify code for range
 s_error = 0;
@@ -43,12 +41,12 @@ fact = (((m+1)/exp(1))^(m+1))*sqrt(2*pi*(m+1));
 % Right side time step
 t_new_right = (1/anorm)*((fact*tol)/(4*beta1*anorm))^xm_right;
 s = 10^(floor(log10(t_new_right))-1); 
-t_new_right = ceil(t_new_right/s)*s; 
+t_new_right = multiplier * ceil(t_new_right/s)*s; 
 
 % Left side time step
 t_new_left = (1/anorm)*((fact*tol)/(4*norm(beta2)*anorm))^xm_right;
 s = 10^(floor(log10(t_new_left))-1); 
-t_new_left = ceil(t_new_left/s)*s; 
+t_new_left = multiplier * ceil(t_new_left/s)*s; 
 
 % Left side time step
 
@@ -110,8 +108,8 @@ while (t_right - t_left) > 0
     end
     if k1 ~= 0
         T(m+2,m+1) = 1;
-        avnorm = norm(A*Q(:,m+1));
-        awnorm = norm(A'*R(:,m+1));
+        avnorm = norm(R(:,1)'*A*Q(:,m+1));
+        awnorm = norm(Q(:,1)'*A'*R(:,m+1));
     end
     ireject = 0;
     right_not_done = 1;
@@ -128,8 +126,8 @@ while (t_right - t_left) > 0
             % Right vector step
             if (right_not_done)
                 F_right = expm(sgn*t_step_right*T(1:mx,1:mx));
-                phi1_right = abs( norm(beta1)*F_right(m+1,1) );
-                phi2_right = abs( norm(beta1)*F_right(m+2,1) * avnorm );
+                phi1_right = abs( F_right(m+1,1) );
+                phi2_right = abs( F_right(m+2,1) * avnorm );
                 if phi1_right > 10*phi2_right
                     err_loc_right = phi2_right;
                     xm_right = 1/m;
@@ -144,8 +142,8 @@ while (t_right - t_left) > 0
             % Left vector step
             if (left_not_done)
                 F_left = expm(sgn*t_step_left*T(1:mx,1:mx));
-                phi1_left = abs( norm(beta2)*F_left(m+1,1) );
-                phi2_left = abs( norm(beta2)*F_left(m+2,1) * awnorm );
+                phi1_left = abs( F_left(m+1,1) );
+                phi2_left = abs( F_left(m+2,1) * awnorm );
                 if phi1_left > 10*phi2_left
                     err_loc_left = phi2_left;
                     xm_left = 1/m;
@@ -163,14 +161,14 @@ while (t_right - t_left) > 0
         else
             t_step_right = gamma1 * t_step_right * (t_step_right*tol/err_loc_right)^xm_right;
             s = 10^(floor(log10(t_step_right))-1);
-            t_step_right = ceil(t_step_right/s) * s;
+            t_step_right = multiplier * ceil(t_step_right/s) * s;
         end
         if err_loc_left <= delta * t_step_left*tol
             left_not_done = 0;
         else
             t_step_left = gamma1 * t_step_left * (t_step_left*tol/err_loc_left)^xm_left;
             s = 10^(floor(log10(t_step_left))-1);
-            t_step_left = ceil(t_step_left/s) * s;
+            t_step_left = multiplier * ceil(t_step_left/s) * s;
         end
         if ~(right_not_done || left_not_done)
             break;
@@ -194,6 +192,7 @@ while (t_right - t_left) > 0
         w1 = Q(:,1:mx)*(F_right(1:mx,1));
         beta1 = norm( w1 );
         hump1 = max(hump1,beta1);
+        %disp(t_step_right);
         t_right = t_right - t_step_right;
         
         % left vector uses transpose
@@ -204,20 +203,21 @@ while (t_right - t_left) > 0
 %             beta2 = norm(beta2);
 %         end
         hump2 = max(hump2,beta2);
+        %disp(t_step_left);
         t_left = t_left + t_step_left;
         
         % Right side time step
-        t_new_right = (1/anorm)*((fact*tol)/(4*beta1*anorm))^xm_right;
-        s = 10^(floor(log10(t_new_right))-1); 
-        t_new_right = ceil(t_new_right/s)*s;
+        t_new_right = gamma1 * t_step_right * (t_step_right*tol/err_loc_right)^xm_right;
+        s = 10^(floor(log10(t_new_right))-1);
+        t_new_right = multiplier * ceil(t_new_right/s) * s;
         
         % Left side time step
-        t_new_left = (1/anorm)*((fact*tol)/(4*norm(beta2)*anorm))^xm_right;
+        t_new_left = gamma1 * t_step_left * (t_step_left*tol/err_loc_left)^xm_left;
         if (~isreal(t_new_left))
             disp("error");
         end
-        s = 10^(floor(log10(t_new_left))-1); 
-        t_new_left = ceil(t_new_left/s)*s; 
+        s = 10^(floor(log10(t_new_left))-1);
+        t_new_left = multiplier * ceil(t_new_left/s) * s;
         
     else % happy_breakdown
         y = (beta2' * F(1, 1)')';
@@ -244,4 +244,8 @@ disp(nstep);
 err = s_error;
 hump1 = hump1 / normv;
 hump2 = hump2 / normuv;
+if (hump1 ~= 1) || (hump2 ~= 1)
+    disp(' hump ');
+end
 % y = w2 * w1;
+
