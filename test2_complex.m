@@ -1,8 +1,8 @@
 fails = 0;
-iter = 10;
+iter = 1;
 for k = 1:iter
     disp(k);
-    m = 1000;
+    m = 4781;
     t = 3.5;
     tol = 1e-7;
     atol = 0.001;
@@ -18,7 +18,7 @@ for k = 1:iter
     % ishermitian(A)
     u = rand(m,1) + 3i *  rand(m,1);
     v = rand(m,1) + 3i * rand(m,1);
-    if (utfAv_SingleArnoldi(u,A,t,v,tol,min(m,30)) > atol)
+    if (compare(u,A,t,v,tol,min(m,30)) > atol)
         disp("FAIL");
         fails = fails + 1;
         %disp(k);

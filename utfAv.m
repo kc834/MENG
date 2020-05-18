@@ -2,7 +2,7 @@
 % a space delimiter. I did a find and replace in a text editor of "+" with 
 % " +" and "-" with " -", with exceptions for exponentials, e.g. "e-05".
 %
-% If you get the error "Unable to find or open 'A_matrix.dat'", run
+% If you get the error "Unable to find or open 'A_matrix.dat'", try
 % git checkout b93e4cd4ab5522dfca211f3cbebc88b1566676fb -- A_matrix.dat
 
 u = load('u.dat');
@@ -17,4 +17,4 @@ A = spconvert(A);
 t = 3.5;
 tol=1e-7; 
 m=30;
-utfAv_SingleArnoldi(u,A,t,v,tol,30);
+compare(u,A,t,v,tol,30);

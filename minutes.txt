@@ -1,3 +1,0 @@
-200304
-
-Implement Bi-Lanczos similar to Arnoldi. Replace first loop with Bi-Lanczos. No need to set lower diagonal to 1 since Volltext uses a different convention. Maintain the dynamic time step size but have the interval shrink from both sides. Need to add a line so you don't just modify v, but u as well (again, just an extra line based on the two relations for A V and U^T A).

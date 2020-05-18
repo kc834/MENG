@@ -1,5 +1,5 @@
 fails = 0; 
-iter = 100;
+iter = 1;
 for k = 1:iter
     disp(k);
     m = 800;
@@ -15,7 +15,7 @@ for k = 1:iter
     A = sparse(A);
     u = rand(m,1);
     v = rand(m,1);
-    if (utfAv_SingleArnoldi(u,A,t,v,tol,min(m,30)) > atol)
+    if (compare(u,A,t,v,tol,min(m,30)) > atol)
         disp("FAIL");
         fails = fails + 1;
         %disp(k);
