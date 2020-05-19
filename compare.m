@@ -16,7 +16,7 @@
 % use t=3.5 if you can't think of any other t value
 
 % Return code 0 for success, 1 for failure
-function error = compare(u,A,t,v,tol,m)
+function [error, t1, t2] = compare(u,A,t,v,tol,m)
 % u, A, v are complex matrices/vectors!
 
 % here f(A) is exp(-At)
@@ -29,25 +29,25 @@ tic
 
 % return the answer after taking a dot product with u
 y = u'*w; % should be a scalar
-toc
+t1 = toc;
 
-disp(' ');
-disp('Result, expv');
-disp(y);
+% disp(' ');
+% disp('Result, expv');
+% disp(y);
 
 tic
 % The BiLanczos implementation
 [yexp, err, hump1, hump2] = expvB( -t, A, u, v, tol, m );
-toc
+t2 = toc;
 
-disp(' ');
-disp('Result, expvB');
-disp(yexp);
+% disp(' ');
+% disp('Result, expvB');
+% disp(yexp);
 
 error = norm((y - yexp)/y);
 
-disp('Error');
-disp(error);
+% disp('Error');
+% disp(error);
 
 if error > 0.001
     disp(' check ');

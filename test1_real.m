@@ -2,7 +2,7 @@ fails = 0;
 iter = 1;
 for k = 1:iter
     disp(k);
-    m = 800;
+    m = 4781;
     t = 3.5;
     tol = 1e-7;
     atol = 0.001;

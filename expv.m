@@ -187,9 +187,9 @@ while t_now < t_out % comparing time
   err_loc = max(err_loc,rndoff);
   s_error = s_error + err_loc;
 end
-disp(' ');
-disp('Number of steps, expv');
-disp(nstep);
+% disp(' ');
+% disp('Number of steps, expv');
+% disp(nstep);
 err = s_error;
 hump = hump / normv;
 

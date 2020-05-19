@@ -28,7 +28,7 @@ err_loc = 0;
 err_loc_left = 0;
 err_loc_right = 0;
 
-k1 = 0;
+k1 = 2;
 xm_right = 1/m; 
 normv = norm(v); % Euclidean norm 
 beta1 = normv;

@@ -238,14 +238,14 @@ if k1 ~= 0
     % Answer
     y = w2'*w1;
 end
-disp('Number of steps, expvB');
-disp(nstep);
+% disp('Number of steps, expvB');
+% disp(nstep);
 % disp(y);
 err = s_error;
 hump1 = hump1 / normv;
 hump2 = hump2 / normuv;
-if (hump1 ~= 1) || (hump2 ~= 1)
-    disp(' hump ');
-end
+% if (hump1 ~= 1) || (hump2 ~= 1)
+%     disp(' hump ');
+% end
 % y = w2 * w1;
 
